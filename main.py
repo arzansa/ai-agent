@@ -2,6 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 def main():
     print("Hello from ai-agent!")
@@ -16,9 +17,17 @@ def main():
 
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    
+    
     args = parser.parse_args()
+    prompt = args.user_prompt
 
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=args.user_prompt)
+
+
+    messages = [types.Content(role="user", parts=[types.Part(text=prompt)])]
+
+    response = client.models.generate_content(model="gemini-2.5-flash", contents=messages)
     
     if response.usage_metadata:
         metadata = response.usage_metadata
@@ -28,8 +37,10 @@ def main():
     tokens_in_response = metadata.candidates_token_count
     result = response.text
 
-    print(f"Prompt tokens: {tokens_in_prompt}")
-    print(f"Response tokens: {tokens_in_response}")
+    if args.verbose:
+        print(f"User prompt: {prompt}")
+        print(f"Prompt tokens: {tokens_in_prompt}")
+        print(f"Response tokens: {tokens_in_response}")
 
     print(result)
 
