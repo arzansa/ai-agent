@@ -9,12 +9,27 @@ def main():
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
 
-    client = genai.Client(api_key=api_key)
-
     if api_key is None:
         raise RuntimeError("no Gemini API key found")
+
+    client = genai.Client(api_key=api_key)
+
+
     
-    print(client.models.generate_content(model="gemini-2.5-flash", contents="Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.").text)
+    response = client.models.generate_content(model="gemini-2.5-flash", contents="Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+    
+    if response.usage_metadata:
+        metadata = response.usage_metadata
+    else:
+        raise RuntimeError("Gemini response metadata not found")
+    tokens_in_prompt = metadata.prompt_token_count
+    tokens_in_response = metadata.candidates_token_count
+    result = response.text
+
+    print(f"Prompt tokens: {tokens_in_prompt}")
+    print(f"Response tokens: {tokens_in_response}")
+
+    print(result)
 
 if __name__ == "__main__":
     main()
